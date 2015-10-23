@@ -1,4 +1,6 @@
-# IpToGeo 
+# IpToGeo
+
+The source data file is from http://ipcn.chacuo.net/
 
 DEMO:
 
