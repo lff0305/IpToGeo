@@ -34,7 +34,7 @@ public class IpFinder {
         store.put(key, new TreeMap<>());
 
         File f = new File(folder);
-        log("\nStart to load folder" + f.getAbsolutePath());
+        log("\nStart to load folder " + f.getAbsolutePath());
         File[] files = f.listFiles();
         for (File file : files) {
             if (file.getName().endsWith(".txt")) {
@@ -118,7 +118,8 @@ public class IpFinder {
     }
 
     public static void main(String[] argu) {
-        String s = find("101.81.75.141");
-        System.out.println(s);
+        String ip = "101.81.75.141";
+        String s = find(ip);
+        System.out.println("\nResult for " + ip + " is " + s);
     }
 }
