@@ -13,6 +13,8 @@ import java.util.TreeMap;
  */
 public class IpFinder {
 
+    static final String UNKONWN = "UNKNOWN";
+
     static final Map<String, TreeMap<Long, String>> store = new HashMap();
 
     private static final String KEY_PROV = "prov";
@@ -94,7 +96,7 @@ public class IpFinder {
         long l = parseIp(ip);
         if (l < 0) {
             log("Invalid " + ip);
-            return "UNKNOWN";
+            return UNKONWN;
         }
 
         String g = get(l, store.get(KEY_PROV)) + "," + get(l, store.get(KEY_ISP));
@@ -110,7 +112,7 @@ public class IpFinder {
         }
         String r = e.getValue();
         if (r == null) {
-            return "UNKNOWN";
+            return UNKONWN;
         }
         return r.toUpperCase();
     }
