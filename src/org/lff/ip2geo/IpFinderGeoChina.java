@@ -1,64 +1,59 @@
 package org.lff.ip2geo;
 
+import org.apache.commons.net.util.SubnetUtils;
+
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * Created by Administrator on 2015/10/23.
+ * Created by liuff on 2015/11/22 17:10
  */
-public class IpFinder {
-
+public class IpFinderGeoChina {
     static final String UNKONWN = "UNKNOWN";
 
-    static final Map<String, TreeMap<Long, Record>> store = new HashMap();
-
-    private static final String KEY_PROV = "prov";
-    private static final String KEY_ISP = "isp";
+    private static TreeMap<Long, Record> map = new TreeMap<>();
 
     static {
-        loadData(KEY_ISP, "data/isp");
-        loadData(KEY_PROV, "data/prov");
+        loadData("db/china.csv");
     }
 
     private static void log(String msg) {
         System.out.println(msg);
     }
 
-    private static void loadData(String key, String folder) {
-
-        store.put(key, new TreeMap<>());
-
-        File f = new File(folder);
-        log("\nStart to load folder " + f.getAbsolutePath());
-        File[] files = f.listFiles();
-        for (File file : files) {
-            if (file.getName().endsWith(".txt")) {
-                load(key, file);
-            }
-        }
-    }
-
-    private static void load(String key, File file) {
+    private static void loadData(String file) {
         try {
             BufferedReader br = new BufferedReader(new FileReader(file));
             String s = br.readLine();
             while (s != null) {
-                String[] ips = s.split(" ");
-                if (ips.length != 2) {
-                    log("invalid data " + s);
-                    continue;
-                }
-                String endIp = ips[0];
-                long end = parseIp(endIp);
+                // 0 network
+                // 1 geoname_id
+                // 2 locale_code
+                // 3 continent_code
+                // 4 continent_name
+                // 5 country_iso_code
+                // 6 country_name
+                // 7 subdivision_1_iso_code
+                // 8 subdivision_1_name
+                // 9 subdivision_2_iso_code
+                // 10 subdivision_2_name
+                // 11 city_name
+                // 12 metro_code
+                // 13 time_zone
+
+                String[] ips = s.split(",");
+
+                String network = get(ips, 0);
+                String prov = get(ips, 1);
+                String city = get(ips, 2);
+                String country = "China";
+                SubnetUtils util = new SubnetUtils(network);
+                long end = parseIp(util.getInfo().getHighAddress());
                 if (end > 0) {
-                    Map<Long, Record> map = store.get(key);
-                    String name = removeExt(file.getName());
-                    Record r = Record.create("", "", name, "");
+                    Record r = Record.create(network, country, prov, city);
                     map.put(Long.valueOf(end), r);
                 }
                 s = br.readLine();
@@ -67,11 +62,17 @@ public class IpFinder {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        log("Load finished. " + map.size() + " records");
+        long free = Runtime.getRuntime().freeMemory() / ( 1024 * 1024);
+        long total = Runtime.getRuntime().totalMemory() / ( 1024 * 1024);
+        log(free + " / " + total);
     }
 
-    private static String removeExt(String name) {
-        int index = name.indexOf(".");
-        return name.substring(0, index);
+    private static String get(String[] ips, int index) {
+        if (ips.length > index) {
+            return ips[index];
+        }
+        return "";
     }
 
     private static long parseIp(String ip) {
@@ -100,7 +101,7 @@ public class IpFinder {
             return UNKONWN;
         }
 
-        String g = get(l, store.get(KEY_PROV)) + "," + get(l, store.get(KEY_ISP));
+        String g = get(l, map);
         return g;
     }
 
@@ -124,4 +125,3 @@ public class IpFinder {
         System.out.println("\nResult for " + ip + " is " + s);
     }
 }
-
